@@ -1,0 +1,22 @@
+start:
+  args:
+  - firehose
+  - merger
+  - reader-node
+  - relayer
+  flags:
+    reader-node-config-file: "config/full_node.yaml"
+    reader-node-log-to-zap: false
+    reader-node-debug-firehose-logs: true
+    
+    # Temporary override for easier testing when not fully synced yet, in production, should not be set
+    firehose-real-time-tolerance: 999999999s
+    relayer-max-source-latency: 999999999s
+
+    substreams-enabled: true
+    substreams-client-endpoint: "localhost:18015"
+    substreams-client-plaintext: true
+    substreams-partial-mode-enabled: true
+    substreams-sub-request-block-range-size: 25000
+    substreams-cache-save-interval: 1000
+    substreams-sub-request-parallel-jobs: 2
