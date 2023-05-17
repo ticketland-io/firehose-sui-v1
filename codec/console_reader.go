@@ -228,7 +228,7 @@ func (r *ConsoleReader) readBlockStart(params []string) error {
 
 	if r.activeBlock != nil {
 		r.logger.Info("received BLOCK_START while one is already active, resetting active block and starting over",
-			zap.Uint64("previous_active_block_height", r.activeBlock.Height),
+			zap.Uint64("previous_active_block_height", r.activeBlock.Checkpoint.SequenceNumber),
 			zap.Uint64("new_active_block_height", height),
 		)
 	}

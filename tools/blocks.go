@@ -240,7 +240,7 @@ func printOneBlockE(cmd *cobra.Command, args []string) error {
 }
 
 func printBlock(block *bstream.Block) error {
-	nativeBlock := block.ToProtocol().(*pbsui.Transaction)
+	nativeBlock := block.ToProtocol().(*pbsui.CheckpointTransactionBlockResponse)
 
 	data, err := json.MarshalIndent(nativeBlock, "", "  ")
 	if err != nil {

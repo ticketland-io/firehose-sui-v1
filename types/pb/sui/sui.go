@@ -9,23 +9,23 @@ import (
 )
 	
 func (b *CheckpointData) ID() string {
-	return uint64ToID(b.Checkpoint.Digest)
+	return hex.EncodeToString(b.Checkpoint.Digest)
 }
 
 func (b *CheckpointData) Number() uint64 {
 	return b.Checkpoint.SequenceNumber
 }
 
-func (b *Block) PreviousID() string {
+func (b *CheckpointData) PreviousID() string {
 	if b.Checkpoint.SequenceNumber == 0 {
 		return ""
 	}
 
-	return uint64ToID(b.Checkpoint.PreviousDigest)
+	return hex.EncodeToString(b.Checkpoint.PreviousDigest)
 }
 
 func (b *CheckpointData) Time() time.Time {
-	return b.Checkpoint.TimestampMs.AsTime()
+	return time.UnixMilli(int64(b.Checkpoint.TimestampMs))
 }
 
 func (b *CheckpointData) LIBNum() uint64 {
