@@ -74,7 +74,7 @@ const (
 	LogBlockEnd   = "BLOCK_END"
 )
 
-func (r *ConsoleReader) next() (out *pbsui.Block, err error) {
+func (r *ConsoleReader) next() (out *pbsui.CheckpointData, err error) {
 	for line := range r.lines {
 		if !strings.HasPrefix(line, LogPrefix) {
 			continue
@@ -234,7 +234,7 @@ func (r *ConsoleReader) readBlockStart(params []string) error {
 	}
 
 	r.activeBlockStartTime = time.Now()
-	r.activeBlock = &pbsui.Block{
+	r.activeBlock = &pbsui.CheckpointData{
 		Height:  height,
 		ChainId: r.chainID,
 	}
@@ -258,7 +258,7 @@ func (r *ConsoleReader) readTransaction(params []string) error {
 		return fmt.Errorf("read trx in block %d: invalid base64 value: %w", r.activeBlock.Height, err)
 	}
 
-	transaction := &pbsui.Transaction{}
+	transaction := &pbsui.CheckpointTransactionBlockResponse{}
 	if err := proto.Unmarshal(out, transaction); err != nil {
 		return fmt.Errorf("read trx in block %d: invalid proto: %w", r.activeBlock.Height, err)
 	}
@@ -286,7 +286,7 @@ func (r *ConsoleReader) readTransaction(params []string) error {
 
 // Format:
 // FIRE BLOCK_END <height>
-func (r *ConsoleReader) readBlockEnd(params []string) (*pbsui.Block, error) {
+func (r *ConsoleReader) readBlockEnd(params []string) (*pbsui.CheckpointData, error) {
 	if err := validateChunk(params, 1); err != nil {
 		return nil, fmt.Errorf("invalid BLOCK_END line: %w", err)
 	}

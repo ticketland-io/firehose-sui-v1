@@ -16,7 +16,7 @@ require (
 	github.com/streamingfast/dmetrics v0.0.0-20221129121022-a1733eca1981
 	github.com/streamingfast/dstore v0.1.1-0.20230202164314-93694544e2ca
 	github.com/streamingfast/firehose v0.1.1-0.20221101130227-3a0b1980aa0b
-	github.com/streamingfast/firehose-sui/types v0.0.0-20220908194130-bfe2d9d84520
+	github.com/ticketland-io/firehose-sui/types v0.0.0-20220908194130-bfe2d9d84520
 	github.com/streamingfast/logging v0.0.0-20220813175024-b4fbb0e893df
 	github.com/streamingfast/merger v0.0.3-0.20221123202507-445dfd357868
 	github.com/streamingfast/node-manager v0.0.2-0.20220912235129-6c08463b0c01

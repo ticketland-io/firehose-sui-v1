@@ -9,7 +9,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func BlockFromProto(b *pbsui.Block) (*bstream.Block, error) {
+func BlockFromProto(b *pbsui.CheckpointData) (*bstream.Block, error) {
 	content, err := proto.Marshal(b)
 	if err != nil {
 		return nil, fmt.Errorf("unable to marshal to binary form: %s", err)

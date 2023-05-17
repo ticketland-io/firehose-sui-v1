@@ -32,7 +32,7 @@ func BlockDecoder(blk *bstream.Block) (interface{}, error) {
 		return nil, fmt.Errorf("this decoder only knows about version 1, got %d", blk.Version())
 	}
 
-	block := new(pbsui.Block)
+	block := new(pbsui.CheckpointData)
 	payload, err := blk.Payload.Get()
 	if err != nil {
 		return nil, fmt.Errorf("getting payload: %w", err)

@@ -23,10 +23,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/streamingfast/bstream"
 	"github.com/streamingfast/bstream/blockstream"
-	"github.com/streamingfast/firehose-sui/codec"
 	"github.com/streamingfast/logging"
 	nodeManager "github.com/streamingfast/node-manager"
 	"github.com/streamingfast/node-manager/mindreader"
+	"github.com/ticketland-io/firehose-sui/codec"
 	"go.uber.org/zap"
 )
 

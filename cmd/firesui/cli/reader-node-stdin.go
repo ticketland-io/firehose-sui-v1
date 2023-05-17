@@ -20,12 +20,12 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/streamingfast/dlauncher/launcher"
-	"github.com/streamingfast/firehose-sui/codec"
 	"github.com/streamingfast/logging"
 	nodeManager "github.com/streamingfast/node-manager"
 	nodeReaderStdinApp "github.com/streamingfast/node-manager/app/node_reader_stdin"
 	"github.com/streamingfast/node-manager/metrics"
 	"github.com/streamingfast/node-manager/mindreader"
+	"github.com/ticketland-io/firehose-sui/codec"
 )
 
 func init() {
