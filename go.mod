@@ -16,18 +16,15 @@ require (
 	github.com/streamingfast/dmetrics v0.0.0-20221129121022-a1733eca1981
 	github.com/streamingfast/dstore v0.1.1-0.20230202164314-93694544e2ca
 	github.com/streamingfast/firehose v0.1.1-0.20221101130227-3a0b1980aa0b
-	github.com/ticketland-io/firehose-sui/types v0.0.0-20220908194130-bfe2d9d84520
 	github.com/streamingfast/logging v0.0.0-20220813175024-b4fbb0e893df
 	github.com/streamingfast/merger v0.0.3-0.20221123202507-445dfd357868
 	github.com/streamingfast/node-manager v0.0.2-0.20220912235129-6c08463b0c01
 	github.com/streamingfast/pbgo v0.0.6-0.20221014191646-3a05d7bc30c8
 	github.com/streamingfast/relayer v0.0.2-0.20220909122435-e67fbc964fd9
 	github.com/streamingfast/sf-tools v0.0.0-20221129171534-a0708b599ce5
-	github.com/streamingfast/shutter v1.5.0
 	github.com/streamingfast/substreams v0.2.1-0.20230130195638-895599b398e8
-	github.com/stretchr/testify v1.8.0
+	github.com/ticketland-io/firehose-sui/types v0.0.0-20230517151523-23661ea51b57
 	go.uber.org/zap v1.21.0
-	golang.org/x/exp v0.0.0-20220907003533-145caa8ea1d0
 	google.golang.org/grpc v1.50.1
 	google.golang.org/protobuf v1.28.1
 )
@@ -123,6 +120,8 @@ require (
 	github.com/streamingfast/jsonpb v0.0.0-20210811021341-3670f0aa02d0 // indirect
 	github.com/streamingfast/opaque v0.0.0-20210811180740-0c01d37ea308 // indirect
 	github.com/streamingfast/sf-tracing v0.0.0-20221104190152-7f721cb9b60c // indirect
+	github.com/streamingfast/shutter v1.5.0 // indirect
+	github.com/stretchr/testify v1.8.0 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/teris-io/shortid v0.0.0-20171029131806-771a37caa5cf // indirect
 	github.com/yourbasic/graph v0.0.0-20210606180040-8ecfec1c2869 // indirect
