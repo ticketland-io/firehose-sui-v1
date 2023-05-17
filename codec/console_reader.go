@@ -13,7 +13,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/streamingfast/bstream"
 	"github.com/ticketland-io/firehose-sui/types"
-	pbsui "github.com/ticketland-io/firehose-sui/types/pb/aptos/extractor/v1"
+	pbsui "github.com/ticketland-io/firehose-sui/types/pb/sui"
 	"go.uber.org/zap"
 )
 
