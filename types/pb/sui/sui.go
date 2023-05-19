@@ -7,7 +7,11 @@ import (
 
 	"github.com/streamingfast/bstream"
 )
-	
+
+func (b *CheckpointData) AsRef() bstream.BlockRef {
+	return bstream.NewBlockRef(b.ID(), b.Checkpoint.SequenceNumber)
+}
+
 func (b *CheckpointData) ID() string {
 	return hex.EncodeToString(b.Checkpoint.Digest)
 }

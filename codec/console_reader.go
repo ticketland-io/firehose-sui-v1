@@ -71,6 +71,7 @@ const (
 	LogInit       = "INIT"
 	LogBlockStart = "BLOCK_START"
 	LogTrx        = "TRX"
+	LogObj        = "OBJ"
 	LogBlockEnd   = "BLOCK_END"
 )
 
@@ -105,7 +106,9 @@ func (r *ConsoleReader) next() (out *pbsui.CheckpointData, err error) {
 		// Order the case from most occurring line prefix to least occurring
 		switch tokens[0] {
 		case LogTrx:
-			err = r.readTransaction(tokens[1:])
+			err = r.readTransactionBlock(tokens[1:])
+		case LogObj:
+			err = r.readObjectChange(tokens[1:])
 
 		case LogBlockStart:
 			err = r.readBlockStart(tokens[1:])
@@ -235,17 +238,18 @@ func (r *ConsoleReader) readBlockStart(params []string) error {
 
 	r.activeBlockStartTime = time.Now()
 	r.activeBlock = &pbsui.CheckpointData{
-		Height:  height,
-		ChainId: r.chainID,
+		Checkpoint:     &pbsui.Checkpoint{
+			SequenceNumber: height,
+		},
 	}
 
 	return nil
 }
 
 // Format:
-// FIRE TRX <sf.aptos.type.v1.Transaction>
-func (r *ConsoleReader) readTransaction(params []string) error {
-	if err := validateChunk(params, 1); err != nil {
+// FIRE TRX <sui_checkpoint_v1.CheckpointTransactionBlockResponse>
+func (r *ConsoleReader) readTransactionBlock(params []string) error {
+	if err := validateChunk(params, 8); err != nil {
 		return fmt.Errorf("invalid log line length: %w", err)
 	}
 
@@ -255,32 +259,23 @@ func (r *ConsoleReader) readTransaction(params []string) error {
 
 	out, err := base64.StdEncoding.DecodeString(params[0])
 	if err != nil {
-		return fmt.Errorf("read trx in block %d: invalid base64 value: %w", r.activeBlock.Height, err)
+		return fmt.Errorf("read trx in block %d: invalid base64 value: %w", r.activeBlock.Number(), err)
 	}
 
 	transaction := &pbsui.CheckpointTransactionBlockResponse{}
 	if err := proto.Unmarshal(out, transaction); err != nil {
-		return fmt.Errorf("read trx in block %d: invalid proto: %w", r.activeBlock.Height, err)
-	}
-
-	if len(r.activeBlock.Transactions) == 0 {
-		r.logger.Debug("received first transaction of block, ensuring its a valid first transaction", zap.Uint64("active_block_height", r.activeBlock.Height))
-
-		if !transaction.IsBlockStartBoundaryType() {
-			return fmt.Errorf("received first TRX of type %q that is not a valid block start boundary transaction (only Block Metadata and Genesis transaction are)", transaction.Type)
-		}
-
-		// Block timestamp is the timestamp of the first transaction (all of the transactions in a block actually share the same timestamp)
-		r.activeBlock.Timestamp = transaction.Timestamp
-	} else {
-		// We already saw the first transaction, ensure we are not seeing again a block start boundary transaction
-		if transaction.IsBlockStartBoundaryType() {
-			return fmt.Errorf("received non-first block start boundary TRX of type %q, expecting to only ever receive a single block satrt boundary transaction within an active block", transaction.Type)
-		}
+		return fmt.Errorf("read trx in block %d: invalid proto: %w", r.activeBlock.Number(), err)
 	}
 
 	r.activeBlock.Transactions = append(r.activeBlock.Transactions, transaction)
 
+	return nil
+}
+
+// Format:
+// FIRE OBJ 
+func (r *ConsoleReader) readObjectChange(params []string) error {
+	// TODO: Not implemented
 	return nil
 }
 
@@ -300,12 +295,12 @@ func (r *ConsoleReader) readBlockEnd(params []string) (*pbsui.CheckpointData, er
 		return nil, fmt.Errorf("no active block in progress when reading BLOCK_END")
 	}
 
-	if r.activeBlock.Height != height {
-		return nil, fmt.Errorf("active block's height %d does not match BLOCK_END received height %d", r.activeBlock.Height, height)
+	if r.activeBlock.Number() != height {
+		return nil, fmt.Errorf("active block's height %d does not match BLOCK_END received height %d", r.activeBlock.Number(), height)
 	}
 
 	if len(r.activeBlock.Transactions) == 0 {
-		return nil, fmt.Errorf("active block height %d does not contain any transaction", r.activeBlock.Height)
+		return nil, fmt.Errorf("active block height %d does not contain any transaction", r.activeBlock.Number())
 	}
 
 	r.stats.blockRate.Inc()
@@ -315,8 +310,8 @@ func (r *ConsoleReader) readBlockEnd(params []string) (*pbsui.CheckpointData, er
 
 	r.logger.Debug("console reader node block",
 		zap.String("id", r.activeBlock.ID()),
-		zap.Uint64("height", r.activeBlock.Height),
-		zap.Time("timestamp", r.activeBlock.Timestamp.AsTime()),
+		zap.Uint64("height", r.activeBlock.Number()),
+		zap.Time("timestamp", r.activeBlock.Time()),
 	)
 
 	block := r.activeBlock
