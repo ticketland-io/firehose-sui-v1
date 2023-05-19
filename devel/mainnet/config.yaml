@@ -6,9 +6,10 @@ start:
   - relayer
   flags:
     reader-node-config-file: "config/full_node.yaml"
+    reader-node-genesis-file: "config/genesis.blob"
     reader-node-log-to-zap: false
     reader-node-debug-firehose-logs: true
-    
+
     # Temporary override for easier testing when not fully synced yet, in production, should not be set
     firehose-real-time-tolerance: 999999999s
     relayer-max-source-latency: 999999999s
