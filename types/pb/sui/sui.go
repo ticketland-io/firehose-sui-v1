@@ -13,7 +13,7 @@ func (b *CheckpointData) AsRef() bstream.BlockRef {
 }
 
 func (b *CheckpointData) ID() string {
-	return hex.EncodeToString(b.Checkpoint.Digest)
+	return uint64ToID(b.Checkpoint.SequenceNumber)
 }
 
 func (b *CheckpointData) Number() uint64 {
