@@ -39,9 +39,6 @@ func registerCommonNodeFlags(cmd *cobra.Command, flagPrefix string, managerAPIAd
 	cmd.Flags().String(flagPrefix+"data-dir", "{data-dir}/{node-role}/data", "Directory for node data ({node-role} is either reader, peering or dev-miner)")
 	cmd.Flags().String(flagPrefix+"config-file", "sui.yaml", "Path where to find the node's config file that is passed directly to the executable")
 	cmd.Flags().String(flagPrefix+"genesis-file", "", "Path where to find the node's genesis.blob file for the network, if defined, going to be copied inside node data directory automatically and '{genesis-file}' will be replaced in config automatically to this value.")
-	cmd.Flags().String(flagPrefix+"waypoint-file", "", "Path where to find the node's waypoint.txt file for the network, if defined, going to be copied inside node data directory automatically and '{waypoint-file}' will be replaced in config automatically to this value.")
-	cmd.Flags().String(flagPrefix+"validator-identity-file", "", "Path where to find the node's validator-identity.yaml file for the network, if defined, going to be copied inside node data directory automatically and '{validator-identity-file}' will be replaced in config automatically to this value.")
-	cmd.Flags().String(flagPrefix+"vfn-identity-file", "", "Path where to find the node's vfn-identity.yaml file for the network, if defined, going to be copied inside node data directory automatically and '{vfn-identity-file}' will be replaced in config automatically to this value.")
 	cmd.Flags().Bool(flagPrefix+"debug-firehose-logs", false, "[DEV] Prints Firehose instrumentation logs to standard output, should be use for debugging purposes only")
 	cmd.Flags().Bool(flagPrefix+"log-to-zap", true, FlagDescription(`
 		When sets to 'true', all standard error output emitted by the invoked process defined via '%s'
@@ -104,9 +101,6 @@ func nodeFactoryFunc(flagPrefix, kind string) func(*launcher.Runtime) (launcher.
 		nodeDataDir := replaceNodeRole(kind, mustReplaceDataDir(sfDataDir, viper.GetString(flagPrefix+"data-dir")))
 		nodeConfigFile := mustReplaceDataDir(sfDataDir, viper.GetString(flagPrefix+"config-file"))
 		nodeGenesisFile := mustReplaceDataDir(sfDataDir, viper.GetString(flagPrefix+"genesis-file"))
-		nodeWaypointFile := mustReplaceDataDir(sfDataDir, viper.GetString(flagPrefix+"waypoint-file"))
-		nodeValidatorIdentityFile := mustReplaceDataDir(sfDataDir, viper.GetString(flagPrefix+"validator-identity-file"))
-		nodeVFNIdentityFile := mustReplaceDataDir(sfDataDir, viper.GetString(flagPrefix+"vfn-identity-file"))
 		resolvedNodeConfigFile := filepath.Join(nodeDataDir, "node.yaml")
 
 		readinessMaxLatency := viper.GetDuration(flagPrefix + "readiness-max-latency")
@@ -114,19 +108,6 @@ func nodeFactoryFunc(flagPrefix, kind string) func(*launcher.Runtime) (launcher.
 		logToZap := viper.GetBool(flagPrefix + "log-to-zap")
 		shutdownDelay := viper.GetDuration("common-system-shutdown-signal-delay") // we reuse this global value
 		httpAddr := viper.GetString(flagPrefix + "manager-api-addr")
-
-		arguments := viper.GetString(flagPrefix + "arguments")
-		nodeArguments, err := buildNodeArguments(
-			appLogger,
-			nodeDataDir,
-			resolvedNodeConfigFile,
-			kind,
-			arguments,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("cannot build node bootstrap arguments")
-		}
-		metricsAndReadinessManager := buildMetricsAndReadinessManager(flagPrefix, readinessMaxLatency)
 
 		readerWorkindDir := mustReplaceDataDir(sfDataDir, viper.GetString("reader-node-working-dir"))
 		syncStateFile := filepath.Join(readerWorkindDir, "sync_state.json")
@@ -144,6 +125,20 @@ func nodeFactoryFunc(flagPrefix, kind string) func(*launcher.Runtime) (launcher.
 
 		appLogger.Info("inital sync state used to restart node", zap.Reflect("state", syncState))
 
+		arguments := viper.GetString(flagPrefix + "arguments")
+		nodeArguments, err := buildNodeArguments(
+			appLogger,
+			syncState.BlockNum,
+			nodeDataDir,
+			resolvedNodeConfigFile,
+			kind,
+			arguments,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("cannot build node bootstrap arguments")
+		}
+		metricsAndReadinessManager := buildMetricsAndReadinessManager(flagPrefix, readinessMaxLatency)
+
 		superviser := nodemanager.NewSuperviser(
 			nodePath,
 			nodeArguments,
@@ -160,9 +155,6 @@ func nodeFactoryFunc(flagPrefix, kind string) func(*launcher.Runtime) (launcher.
 			nodeConfigFile:            nodeConfigFile,
 			resolvedNodeConfigFile:    resolvedNodeConfigFile,
 			nodeGenesisFile:           nodeGenesisFile,
-			nodeWaypointFile:          nodeWaypointFile,
-			nodeValidatorIdentityFile: nodeValidatorIdentityFile,
-			nodeVFNIdentityFile:       nodeVFNIdentityFile,
 			logger:                    appLogger,
 		}
 
@@ -237,7 +229,11 @@ func nodeFactoryFunc(flagPrefix, kind string) func(*launcher.Runtime) (launcher.
 
 type nodeArgsByRole map[string]string
 
-func buildNodeArguments(logger *zap.Logger, nodeDataDir, nodeConfigFile, nodeRole string, args string) ([]string, error) {
+func buildNodeArguments(
+	logger *zap.Logger,
+	starting_checkpoint_seq uint64,
+	nodeDataDir, nodeConfigFile, nodeRole, args string,
+) ([]string, error) {
 	resolvedNodeConfigFile, err := filepath.Abs(nodeConfigFile)
 	if err != nil {
 		logger.Warn("unable to make path absolute", zap.String("path", nodeConfigFile), zap.Error(err))
@@ -245,7 +241,10 @@ func buildNodeArguments(logger *zap.Logger, nodeDataDir, nodeConfigFile, nodeRol
 	}
 
 	typeRoles := nodeArgsByRole{
-		"reader": fmt.Sprintf("--sui-node-config %s {extra-arg}", resolvedNodeConfigFile),
+		"reader": fmt.Sprintf(
+			"--sui-node-config %s --starting-checkpoint-seq %d {extra-arg}",
+			resolvedNodeConfigFile, starting_checkpoint_seq,
+		),
 	}
 
 	argsString, ok := typeRoles[nodeRole]

@@ -1,8 +1,6 @@
 package nodemanager
 
 import (
-	"fmt"
-	"os"
 	"strings"
 	"sync"
 
@@ -69,11 +67,6 @@ func (s *Superviser) GetCommand() string {
 
 func (s *Superviser) Start(options ...nodeManager.StartOption) error {
 	s.Logger.Info("re-configuring environment variable to start syncing at correct location", zap.Uint64("starting_block_num", s.lastBlockSeen))
-	// We inherit from parent process env (via `os.Environ()`) and add
-	// STARTING_BLOCK which will be picked by `apots-node` to determine
-	// at which "block num" to start.
-	s.Env = append(os.Environ(), fmt.Sprintf("STARTING_BLOCK=%d", s.lastBlockSeen))
-
 	return s.Superviser.Start(options...)
 }
 

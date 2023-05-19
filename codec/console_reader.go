@@ -110,10 +110,8 @@ func (r *ConsoleReader) next() (out *pbsui.CheckpointData, err error) {
 			err = r.readTransactionBlock(tokens[1:])
 		case LogObj:
 			err = r.readObjectChange(tokens[1:])
-
 		case LogBlockStart:
 			err = r.readBlockStart(tokens[1:])
-
 		case LogBlockEnd:
 			// This end the execution of the reading loop as we have a full block here
 			block, err := r.readBlockEnd(tokens[1:])
@@ -122,10 +120,8 @@ func (r *ConsoleReader) next() (out *pbsui.CheckpointData, err error) {
 			}
 
 			return block, nil
-
 		case LogInit:
 			err = fmt.Errorf("received INIT line while one has already been read")
-
 		default:
 			if r.logger.Core().Enabled(zap.DebugLevel) {
 				r.logger.Debug("skipping unknown firehose log line", zap.String("line", line))

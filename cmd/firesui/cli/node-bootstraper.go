@@ -19,9 +19,6 @@ type bootstrapper struct {
 	nodeConfigFile            string
 	resolvedNodeConfigFile    string
 	nodeGenesisFile           string
-	nodeWaypointFile          string
-	nodeValidatorIdentityFile string
-	nodeVFNIdentityFile       string
 	logger                    *zap.Logger
 }
 
@@ -44,9 +41,6 @@ func (b *bootstrapper) Bootstrap() error {
 
 	templatingDirectives := map[string]string{
 		"{genesis-file}":            b.nodeGenesisFile,
-		"{waypoint-file}":           b.nodeWaypointFile,
-		"{validator-identity-file}": b.nodeValidatorIdentityFile,
-		"{vfn-identity-file}":       b.nodeVFNIdentityFile,
 	}
 
 	for templateDirective, file := range templatingDirectives {
