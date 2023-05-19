@@ -245,7 +245,7 @@ func buildNodeArguments(logger *zap.Logger, nodeDataDir, nodeConfigFile, nodeRol
 	}
 
 	typeRoles := nodeArgsByRole{
-		"reader": fmt.Sprintf("--config %s {extra-arg}", resolvedNodeConfigFile),
+		"reader": fmt.Sprintf("--sui-node-config %s {extra-arg}", resolvedNodeConfigFile),
 	}
 
 	argsString, ok := typeRoles[nodeRole]

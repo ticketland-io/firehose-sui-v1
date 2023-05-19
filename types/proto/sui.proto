@@ -8,7 +8,7 @@ import "google/protobuf/empty.proto";
 message CheckpointData {
   Checkpoint checkpoint = 1;
   repeated CheckpointTransactionBlockResponse transactions = 2;
-  repeated ChangedObjectPair changed_objects = 3;
+  repeated ChangedObject changed_objects = 3;
 }
 
 message Checkpoint {
@@ -517,9 +517,9 @@ message EventID {
   uint64 event_seq = 2;
 }
 
-message ChangedObjectPair {
-  ObjectStatus one = 1;
-  SuiObjectData two = 2;
+message ChangedObject {
+  ObjectStatus status = 1;
+  SuiObjectData data = 2;
 }
 
 message ObjectStatus {
@@ -671,7 +671,7 @@ message SuiMoveValue {
     bytes address = 3;
     ListOfSuiMoveValues vector = 4;
     string string = 5;
-    UID uid = 6;
+    UID UID = 6;
     SuiMoveStruct struct = 7;
     SuiMoveValue option = 8;
   }

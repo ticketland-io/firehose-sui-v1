@@ -15,6 +15,6 @@ Firehose on Sui Blockchain
 
 3. Generate go file from modified protobuf
 
-   ```
+   ```bash
    ./types/pb/generate.sh
- 
+  ```

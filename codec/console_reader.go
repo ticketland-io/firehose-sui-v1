@@ -27,7 +27,8 @@ type ConsoleReader struct {
 
 	activeBlockStartTime time.Time
 	activeBlock          *pbsui.CheckpointData
-	chainID              uint32
+	// Chain Identifier is the digest of the genesis checkpoint
+	chainID              string
 	initRead             bool
 	stats                *consoleReaderStats
 }
@@ -197,21 +198,16 @@ func (r *ConsoleReader) readInit(params []string) error {
 		chainIDString = params[6]
 	}
 
-	chainID, err := strconv.ParseUint(chainIDString, 10, 32)
-	if err != nil {
-		return fmt.Errorf("invalid chain id %q: %w", chainIDString, err)
-	}
-
 	r.logger.Info("initialized console reader correclty",
 		zap.String("client_name", clientName),
 		zap.String("client_version", clientVersion),
 		zap.String("fork", fork),
 		zap.Uint64("firehose_major", firehoseMajor),
 		zap.Uint64("firehose_minor", firehoseMinor),
-		zap.Uint32("chain_id", uint32(chainID)),
+		zap.String("chain_id", chainIDString),
 	)
 
-	r.chainID = uint32(chainID)
+	r.chainID = chainIDString
 	r.initRead = true
 
 	return nil
@@ -249,7 +245,7 @@ func (r *ConsoleReader) readBlockStart(params []string) error {
 // Format:
 // FIRE TRX <sui_checkpoint_v1.CheckpointTransactionBlockResponse>
 func (r *ConsoleReader) readTransactionBlock(params []string) error {
-	if err := validateChunk(params, 8); err != nil {
+	if err := validateChunk(params, 1); err != nil {
 		return fmt.Errorf("invalid log line length: %w", err)
 	}
 
@@ -275,7 +271,26 @@ func (r *ConsoleReader) readTransactionBlock(params []string) error {
 // Format:
 // FIRE OBJ 
 func (r *ConsoleReader) readObjectChange(params []string) error {
-	// TODO: Not implemented
+	if err := validateChunk(params, 1); err != nil {
+		return fmt.Errorf("invalid log line length: %w", err)
+	}
+
+	if r.activeBlock == nil {
+		return fmt.Errorf("no active block in progress when reading TRX")
+	}
+
+	out, err := base64.StdEncoding.DecodeString(params[0])
+	if err != nil {
+		return fmt.Errorf("read trx in block %d: invalid base64 value: %w", r.activeBlock.Number(), err)
+	}
+
+	changed_object := &pbsui.ChangedObject{}
+	if err := proto.Unmarshal(out, changed_object); err != nil {
+		return fmt.Errorf("read obj in block %d: invalid proto: %w", r.activeBlock.Number(), err)
+	}
+
+	r.activeBlock.ChangedObjects = append(r.activeBlock.ChangedObjects, changed_object)
+
 	return nil
 }
 
