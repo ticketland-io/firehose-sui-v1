@@ -68,12 +68,13 @@ func (r *ConsoleReader) ReadBlock() (out *bstream.Block, err error) {
 }
 
 const (
-	LogPrefix     = "FIRE"
-	LogInit       = "INIT"
-	LogBlockStart = "BLOCK_START"
-	LogTrx        = "TRX"
-	LogObj        = "OBJ"
-	LogBlockEnd   = "BLOCK_END"
+	LogPrefix      = "FIRE"
+	LogInit        = "INIT"
+	LogBlockStart  = "BLOCK_START"
+	LogTrx         = "TRX"
+	LogObj         = "OBJ"
+	LogCheckpoint  = "CHECKPOINT"
+	LogBlockEnd    = "BLOCK_END"
 )
 
 func (r *ConsoleReader) next() (out *pbsui.CheckpointData, err error) {
@@ -106,6 +107,8 @@ func (r *ConsoleReader) next() (out *pbsui.CheckpointData, err error) {
 
 		// Order the case from most occurring line prefix to least occurring
 		switch tokens[0] {
+		case LogCheckpoint:
+			err = r.readCheckpointOverview(tokens[1:])
 		case LogTrx:
 			err = r.readTransactionBlock(tokens[1:])
 		case LogObj:
@@ -229,11 +232,33 @@ func (r *ConsoleReader) readBlockStart(params []string) error {
 	}
 
 	r.activeBlockStartTime = time.Now()
-	r.activeBlock = &pbsui.CheckpointData{
-		Checkpoint:     &pbsui.Checkpoint{
-			SequenceNumber: height,
-		},
+	r.activeBlock = &pbsui.CheckpointData {}
+
+	return nil
+}
+
+// Format:
+// FIRE CHECKPOINT <sui_checkpoint_v1.Checkpoint>
+func(r * ConsoleReader) readCheckpointOverview(params []string) error {
+	if err := validateChunk(params, 1); err != nil {
+		return fmt.Errorf("invalid log line length: %w", err)
 	}
+
+	if r.activeBlock == nil {
+		return fmt.Errorf("no active block in progress when reading CHECKPOINT")
+	}
+
+	out, err := base64.StdEncoding.DecodeString(params[0])
+	if err != nil {
+		return fmt.Errorf("read trx in block %d: invalid base64 value: %w", r.activeBlock.Number(), err)
+	}
+
+	checkpoint := &pbsui.Checkpoint{}
+	if err := proto.Unmarshal(out, checkpoint); err != nil {
+		return fmt.Errorf("read CHECKPOIN in block %d: invalid proto: %w", r.activeBlock.Number(), err)
+	}
+
+	r.activeBlock.Checkpoint = checkpoint
 
 	return nil
 }
@@ -265,14 +290,14 @@ func (r *ConsoleReader) readTransactionBlock(params []string) error {
 }
 
 // Format:
-// FIRE OBJ 
+// FIRE OBJ <sui_checkpoint_v1.ChangedObject>
 func (r *ConsoleReader) readObjectChange(params []string) error {
 	if err := validateChunk(params, 1); err != nil {
 		return fmt.Errorf("invalid log line length: %w", err)
 	}
 
 	if r.activeBlock == nil {
-		return fmt.Errorf("no active block in progress when reading TRX")
+		return fmt.Errorf("no active block in progress when reading OBJ")
 	}
 
 	out, err := base64.StdEncoding.DecodeString(params[0])
@@ -282,7 +307,7 @@ func (r *ConsoleReader) readObjectChange(params []string) error {
 
 	changed_object := &pbsui.ChangedObject{}
 	if err := proto.Unmarshal(out, changed_object); err != nil {
-		return fmt.Errorf("read obj in block %d: invalid proto: %w", r.activeBlock.Number(), err)
+		return fmt.Errorf("read OBJ in block %d: invalid proto: %w", r.activeBlock.Number(), err)
 	}
 
 	r.activeBlock.ChangedObjects = append(r.activeBlock.ChangedObjects, changed_object)

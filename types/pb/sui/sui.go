@@ -25,7 +25,15 @@ func (b *CheckpointData) PreviousID() string {
 		return ""
 	}
 
-	return hex.EncodeToString(b.Checkpoint.PreviousDigest)
+	return uint64ToID(b.PreviousNum())
+}
+
+func (b *CheckpointData) PreviousNum() uint64 {
+	if b.Checkpoint.SequenceNumber == 0 {
+		return 0
+	}
+
+	return b.Checkpoint.SequenceNumber - 1
 }
 
 func (b *CheckpointData) Time() time.Time {

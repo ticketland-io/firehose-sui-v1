@@ -7,6 +7,7 @@ start:
   flags:
     reader-node-config-file: "config/full_node.yaml"
     reader-node-genesis-file: "config/genesis.blob"
+    reader-node-stop-block-num: 100000000000000000000000000
     reader-node-log-to-zap: false
     reader-node-debug-firehose-logs: true
 
