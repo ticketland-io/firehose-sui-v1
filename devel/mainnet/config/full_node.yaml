@@ -9,7 +9,7 @@ enable-event-processing: true
 
 genesis:
   # Update this to the location of where the genesis file is stored
-  genesis-file-location: "{genesis-file}"
+  genesis-file-location: "/Users/ppoliani/code/apocentre/sui/firehose-sui/devel/mainnet/config/genesis.blob"
 
 # To save disk space on your Full node, add the following settings which will enable aggressive pruning:
 authority-store-pruning-config:
