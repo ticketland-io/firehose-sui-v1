@@ -123,12 +123,13 @@ func init() {
 					)
 				}
 
-				registerServiceExt = func(server dgrpcserver.Server,
+				registerServiceExt = func(
+					server dgrpcserver.Server,
 					mergedBlocksStore dstore.Store,
 					forkedBlocksStore dstore.Store, // this can be nil here
 					forkableHub *hub.ForkableHub,
-					logger *zap.Logger) {
-
+					logger *zap.Logger,
+				) {
 					if tier1 != nil {
 						tier1.Register(server, mergedBlocksStore, forkedBlocksStore, forkableHub, logger)
 					}
