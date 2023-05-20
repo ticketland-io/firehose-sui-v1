@@ -27,9 +27,9 @@ Make sure the `target/release/sui-sf-indexer` binary is moved to a folder that i
 
 3. Generate go file from modified protobuf
 
-   ```bash
-   ./types/pb/generate.sh
-  ```
+```bash
+./types/pb/generate.sh
+```
 
 4. Run Firehose
 
